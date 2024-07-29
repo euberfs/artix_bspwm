@@ -117,6 +117,8 @@ Grant root access to our user
  BSPWM Installation
 
 	pacman -S bspwm sxhkd 
+ bspwm sxhkd polybar compton rofi dunst cmus 
+ pacman -S xorg xf86-video-intel xdg-user-dirs xorg-xinit git alacritty feh picom bluez bluez-utils rofi dunst htop pulseaudio pulseaudio-alsa pulseaudio-bluetooth thunar unzip zsh  thunar-volman thunar-archive-plugin npm neovim
  
 Adding the Username to the Sudoers File
 
