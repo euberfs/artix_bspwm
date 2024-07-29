@@ -1,72 +1,84 @@
 # Installation
 
-### Verify EFI system partition
-	ls /sys/firmware/efi/efivars
+	$ ls /sys/firmware/efi/efivars
 
 ### Set the keyboard layout
 	ls -R /usr/share/kbd/keymaps
 
-# Partition your disk
+### Disk formatting
 	cfdisk /dev/sda 
-
-### Format and mount partitions
-
-    mkfs.fat -F 32 /dev/sda1
-    fatlabel /dev/sda1 BOOT
-    mkfs.ext4 -L ROOT /dev/sda2        
-    mkfs.ext4 -L HOME /dev/sda3  
-    mount /dev/disk/by-label/ROOT /mnt
-    mkdir /mnt/boot
-    mkdir /mnt/home 
-    mount /dev/disk/by-label/BOOT /mnt/boot 
+    
+	#EFI
+ 	mkfs.fat -F 32 /dev/sda1
+	fatlabel /dev/sda1 BOOT
  
-    mkswap -L SWAP /dev/sda4           
-    swapon /dev/disk/by-label/SWAP 
+ 	#ROOT, HOME
+	mkfs.ext4 -L ROOT /dev/sda2        
+	mkfs.ext4 -L HOME /dev/sda3  
+	mount /dev/disk/by-label/ROOT /mnt
+	mkdir /mnt/boot
+	mkdir /mnt/home 
+	mount /dev/disk/by-label/BOOT /mnt/boot 
+
+	#IF SWAP
+	mkswap -L SWAP /dev/sda4           
+	swapon /dev/disk/by-label/SWAP 
 
 ### Connect to the Internet
-    ping artixlinux.org
+	ping artixlinux.org
 
-### Update the system clock
-    rc-service ntpd start
+Update the system clock
+
+	rc-service ntpd start
 
 ### Install base system
-    basestrap /mnt base base-devel openrc elogind-openrc
+	basestrap /mnt base base-devel openrc elogind-openrc
 
 ### Install a kernel
-    basestrap /mnt linux linux-firmware
+	basestrap /mnt linux linux-firmware
 
 ### Generating Fstab 
     fstabgen -U /mnt >> /mnt/etc/fstab
 
-### chroot into the fresh install: 
+Check the resulting fstab for errors before rebooting. Now, you can chroot into your new Artix system with: 
+
      artix-chroot /mnt
+     
+### Localtime, locale and extra config
 
-### Localization
-    pacman -Syu
-    nano /etc/locale.gen
-    locale-gen
-    
-## Localtime, locale and extra config
+Configure the system clock
 
-### Install neovim
-	pacman -S neovim
-
-### Configure the system clock
     ln -sf /usr/share/zoneinfo/Region/City /etc/localtime
     hwclock --systohc
 
-### To set the locale systemwide, create or edit /etc/locale.conf (which is sourced by /etc/profile) or /etc/bash/bashrc.d/artix.bashrc or /etc/bash/bashrc.d/local.bashrc; user-specific changes may be made to their respective ~/.bashrc, for example:
+Localization
 
-    export LANG="en_US.UTF-8"    
-    export LC_COLLATE="C"
+	pacman -Syu
+	nano /etc/locale.gen
+	locale-gen
+
+To set the locale systemwide, create or edit /etc/locale.conf (which is sourced by /etc/profile) or /etc/bash/bashrc.d/artix.bashrc or /etc/bash/bashrc.d/local.bashrc; user-specific changes may be made to their respective ~/.bashrc, for example:
+
+	export LANG="en_US.UTF-8"    
+	export LC_COLLATE="C"
     
-### Network configuration
-	nvim /etc/hostname
+Update
 
-	nvim /etc/hosts
+	sudo pacman -Syu neovim git
+
+Add user(s)
+
+	passwd
+	useradd -m MYUSERNAME
+	passwd MYUSERNAME
+	usermod -aG wheel,audio,video,optical,storage MYUSERNAME
+
+Network configuration
+
+    nvim /etc/hostname
+
+nvim /etc/hosts
  
-Add the next lines to the file, change ‘arch’ for your username
-
      127.0.0.1        localhost
      ::1              localhost
      127.0.1.1        artix.localdomain  artix
@@ -74,26 +86,20 @@ Add the next lines to the file, change ‘arch’ for your username
 If you use OpenRC you should add your hostname to /etc/conf.d/hostname too: 
 
     hostname='myhostname'
-    
-SUDO password
-	
- 	passwd
-## Grub Installation
-    pacman -S grub os-prober efibootmgr
-    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
-    grub-mkconfig -o /boot/grub/grub.cfg
-
-### Add user(s)
-	passwd
-	useradd -m user
-	passwd user
-
-
 
 # Install connman and optionally a front-end:
 
     pacman -S connman-openrc connman-gtk
     rc-update add connmand
+    
+# Boot Loader
+
+    pacman -S grub os-prober efibootmgr
+    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
+    grub-mkconfig -o /boot/grub/grub.cfg
+
+
+
 
 # Reboot the system
 
