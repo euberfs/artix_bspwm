@@ -2,10 +2,12 @@
 
 	$ ls /sys/firmware/efi/efivars
 
-### Set the keyboard layout
+Set the keyboard layout
+
 	ls -R /usr/share/kbd/keymaps
 
-### Disk formatting
+Disk formatting
+
 	cfdisk /dev/sda 
     
 	#EFI
@@ -24,27 +26,33 @@
 	mkswap -L SWAP /dev/sda4           
 	swapon /dev/disk/by-label/SWAP 
 
-### Connect to the Internet
+Connect to the Internet
+
 	ping artixlinux.org
 
 Update the system clock
 
 	rc-service ntpd start
 
-### Install base system
+Install base system
+
 	basestrap /mnt base base-devel openrc elogind-openrc
 
-### Install a kernel
+Install a kernel
+
 	basestrap /mnt linux linux-firmware
 
-### Generating Fstab 
+Generating Fstab 
+
     fstabgen -U /mnt >> /mnt/etc/fstab
 
 Check the resulting fstab for errors before rebooting. Now, you can chroot into your new Artix system with: 
 
      artix-chroot /mnt
-     
-### Localtime, locale and extra config
+
+Install Neovim
+
+	sudo pacman -Syu neovim git
 
 Configure the system clock
 
@@ -62,65 +70,75 @@ To set the locale systemwide, create or edit /etc/locale.conf (which is sourced 
 	export LANG="en_US.UTF-8"    
 	export LC_COLLATE="C"
     
-Update
+Network configuration
 
-	sudo pacman -Syu neovim git
+	nvim /etc/hostname
 
+nvim /etc/hosts
+ 
+	127.0.0.1        localhost
+	::1              localhost
+	127.0.1.1        artix.localdomain  artix
+
+If you use OpenRC you should add your hostname to /etc/conf.d/hostname too: 
+
+	hostname='myhostname'
+
+Install connman and optionally a front-end:
+
+	pacman -S connman-openrc connman-gtk
+	rc-update add connmand
+ 
+Type your SUDO password
+
+	passwd
+ 
 Add user(s)
 
 	passwd
 	useradd -m MYUSERNAME
 	passwd MYUSERNAME
-	usermod -aG wheel,audio,video,optical,storage MYUSERNAME
+	usermod -aG wheel,audio,video,optical,storage MYUSERNAME  
 
-Network configuration
+Make sure ‘sudo’ is installed
 
-    nvim /etc/hostname
+	pacman -S sudo
 
-nvim /etc/hosts
- 
-     127.0.0.1        localhost
-     ::1              localhost
-     127.0.1.1        artix.localdomain  artix
+Grant root access to our user
 
-If you use OpenRC you should add your hostname to /etc/conf.d/hostname too: 
-
-    hostname='myhostname'
-
-# Install connman and optionally a front-end:
-
-    pacman -S connman-openrc connman-gtk
-    rc-update add connmand
+	EDITOR=nvim visudo
     
-# Boot Loader
+ Boot Loader
 
-    pacman -S grub os-prober efibootmgr
-    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
-    grub-mkconfig -o /boot/grub/grub.cfg
+	pacman -S grub os-prober efibootmgr
+	grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
+	grub-mkconfig -o /boot/grub/grub.cfg
+ 
+ BSPWM Installation
 
-
-
-
-# Reboot the system
-
-    exit                           
-    umount -R /mnt
-    sudo reboot
-
-
-# Grant root access to our user
-    EDITOR=nvim visudo
+	pacman -S bspwm sxhkd 
  
 Adding the Username to the Sudoers File
 
-    su root
+	su root
     
-    root	ALL=(ALL:ALL) ALL
-    USERNAME  	ALL=(ALL:ALL) ALL
+	root		ALL=(ALL:ALL) ALL
+	USERNAME  	ALL=(ALL:ALL) ALL
 
-# Login into newly created user
-    su - USERNAME
+HOME directory
 
+	xdg-user-dirs-update
+
+Exit and Reboot
+
+	exit                           
+	umount -R /mnt
+	sudo reboot
+
+
+=============
+ 
+ 
 # Add Arch Linux repos, extra + Community
 	sudo pacman -Syu artix-archlinux-support
 	git clone https://github.com/euberfs/artix_i3.git
@@ -131,8 +149,6 @@ Adding the Username to the Sudoers File
 	cd artix_i3 
 	sudo sh apps_pacman.sh
 
-# HOME directory
-	xdg-user-dirs-update
 
 # Dofiles
 	cp -r ~/artix_i3/.dotfiles ~/
