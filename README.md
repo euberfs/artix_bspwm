@@ -1,15 +1,15 @@
 # Installation
 
 ### Verify EFI system partition
-    ls /sys/firmware/efi/efivars
+	ls /sys/firmware/efi/efivars
 
-# Set the keyboard layout
+### Set the keyboard layout
 	ls -R /usr/share/kbd/keymaps
 
 # Partition your disk
-    cfdisk /dev/sda 
+	cfdisk /dev/sda 
 
-# Format and mount partitions
+### Format and mount partitions
 
     mkfs.fat -F 32 /dev/sda1
     fatlabel /dev/sda1 BOOT
@@ -23,70 +23,72 @@
     mkswap -L SWAP /dev/sda4           
     swapon /dev/disk/by-label/SWAP 
 
-# Connect to the Internet
+### Connect to the Internet
     ping artixlinux.org
 
-# Update the system clock
+### Update the system clock
     rc-service ntpd start
 
-# Install base system
+### Install base system
     basestrap /mnt base base-devel openrc elogind-openrc
 
-# Install a kernel
+### Install a kernel
     basestrap /mnt linux linux-firmware
 
-# Use fstabgen to generate /etc/fstab, use -U for UUIDs as source identifiers and -L for partition labels: 
+### Generating Fstab 
     fstabgen -U /mnt >> /mnt/etc/fstab
 
-# Check the resulting fstab for errors before rebooting. Now, you can chroot into your new Artix system with: 
+### chroot into the fresh install: 
      artix-chroot /mnt
 
-# Configure the system clock
-    ln -sf /usr/share/zoneinfo/Region/City /etc/localtime
-    hwclock --systohc
-
-# Localization
+### Localization
     pacman -Syu
     nano /etc/locale.gen
     locale-gen
+    
+## Localtime, locale and extra config
 
-To set the locale systemwide, create or edit /etc/locale.conf (which is sourced by /etc/profile) or /etc/bash/bashrc.d/artix.bashrc or /etc/bash/bashrc.d/local.bashrc; user-specific changes may be made to their respective ~/.bashrc, for example:
+### Install neovim
+	pacman -S neovim
+
+### Configure the system clock
+    ln -sf /usr/share/zoneinfo/Region/City /etc/localtime
+    hwclock --systohc
+
+### To set the locale systemwide, create or edit /etc/locale.conf (which is sourced by /etc/profile) or /etc/bash/bashrc.d/artix.bashrc or /etc/bash/bashrc.d/local.bashrc; user-specific changes may be made to their respective ~/.bashrc, for example:
 
     export LANG="en_US.UTF-8"    
     export LC_COLLATE="C"
+    
+### Network configuration
+	nvim /etc/hostname
 
-# Chroot into your new Artix
-     artix-chroot /mnt # formerly artools-chroot
-
-# Boot Loader
-
-    pacman -S grub os-prober efibootmgr
-    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
-    grub-mkconfig -o /boot/grub/grub.cfg
-
-# Update
-
-	sudo pacman -Syu neovim git
-
-# Add user(s)
-
-    passwd
-    useradd -m user
-    passwd user
-
-# Network configuration
-
-    nvim /etc/hostname
-
-nvim /etc/hosts
+	nvim /etc/hosts
  
+Add the next lines to the file, change ‘arch’ for your username
+
      127.0.0.1        localhost
      ::1              localhost
-     127.0.1.1        myhostname.localdomain  myhostname
+     127.0.1.1        artix.localdomain  artix
 
 If you use OpenRC you should add your hostname to /etc/conf.d/hostname too: 
 
     hostname='myhostname'
+    
+SUDO password
+	
+ 	passwd
+## Grub Installation
+    pacman -S grub os-prober efibootmgr
+    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
+    grub-mkconfig -o /boot/grub/grub.cfg
+
+### Add user(s)
+	passwd
+	useradd -m user
+	passwd user
+
+
 
 # Install connman and optionally a front-end:
 
