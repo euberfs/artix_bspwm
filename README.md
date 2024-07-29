@@ -62,7 +62,7 @@ Configure the system clock
 Localization
 
 	pacman -Syu
-	nano /etc/locale.gen
+	nvim /etc/locale.gen
 	locale-gen
 
 To set the locale systemwide, create or edit /etc/locale.conf (which is sourced by /etc/profile) or /etc/bash/bashrc.d/artix.bashrc or /etc/bash/bashrc.d/local.bashrc; user-specific changes may be made to their respective ~/.bashrc, for example:
@@ -107,7 +107,12 @@ Make sure ‘sudo’ is installed
 Grant root access to our user
 
 	EDITOR=nvim visudo
-    
+	
+Adding the Username to the Sudoers File
+
+	root		ALL=(ALL:ALL) ALL
+	USERNAME  	ALL=(ALL:ALL) ALL
+ 
  Boot Loader
 
 	pacman -S grub os-prober efibootmgr
@@ -116,17 +121,8 @@ Grant root access to our user
  
  BSPWM Installation
 
-	pacman -S bspwm sxhkd 
- bspwm sxhkd polybar compton rofi dunst cmus 
- pacman -S xorg xf86-video-intel xdg-user-dirs xorg-xinit git alacritty feh picom bluez bluez-utils rofi dunst htop pulseaudio pulseaudio-alsa pulseaudio-bluetooth thunar unzip zsh  thunar-volman thunar-archive-plugin npm neovim
+	pacman -S bspwm sxhkd xorg xf86-video-intel xdg-user-dirs xorg-xinit git alacritty 
  
-Adding the Username to the Sudoers File
-
-	su root
-    
-	root		ALL=(ALL:ALL) ALL
-	USERNAME  	ALL=(ALL:ALL) ALL
-
 HOME directory
 
 	xdg-user-dirs-update
